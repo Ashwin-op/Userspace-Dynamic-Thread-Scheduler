@@ -23,7 +23,7 @@
 
 /* research the above Needed API and design accordingly */
 
-#define SZ_STACK (1024*1024)
+#define SZ_STACK 4096
 
 struct thread {
     jmp_buf env;
@@ -76,12 +76,6 @@ int scheduler_create(scheduler_fnc_t fnc, void *arg) {
     }
 
     thread->stack.memory = memory_align(thread->stack.memory_, PAGE_SIZE);
-    if (!thread->stack.memory) {
-        TRACE("malloc failed\n");
-        free(thread->stack.memory_);
-        free(thread);
-        return -1;
-    }
 
     thread->status = STATUS_;
     thread->fnc = fnc;
@@ -115,6 +109,7 @@ void schedule(void) {
         __asm__ volatile ("mov %[rs], %%rsp \n" : [rs] "+r"(rsp)
         ::);
 
+        scheduler.current->status = STATUS_RUNNING;
         scheduler.current->fnc(scheduler.current->arg);
 
         scheduler.current->status = STATUS_TERMINATED;
@@ -128,34 +123,43 @@ void schedule(void) {
 void destroy(void) {
     struct thread *curr = scheduler.current->next;
     while (curr != scheduler.current) {
-        if (curr->status == STATUS_TERMINATED) {
-            struct thread *next = curr->next;
-            free(curr->stack.memory_);
-            free(curr);
-            curr = next;
-        } else {
-            curr = curr->next;
-        }
+        struct thread *next = curr->next;
+        free(curr->stack.memory_);
+        free(curr);
+        curr = next;
     }
 
-    if (scheduler.current->status == STATUS_TERMINATED) {
-        free(scheduler.current->stack.memory_);
-        free(scheduler.current);
-        scheduler.current = NULL;
-    }
+    free(scheduler.current->stack.memory_);
+    free(scheduler.current);
+    scheduler.current = NULL;
+    scheduler.head = NULL;
+}
 
-    if (scheduler.current == NULL) {
-        scheduler.head = NULL;
+void set_timer(void) {
+    if (SIG_ERR == signal(SIGALRM, (__sighandler_t) scheduler_yield)) {
+        TRACE("signal()");
+    }
+    alarm(1);
+}
+
+void clear_timer(void) {
+    alarm(0);
+    if (SIG_ERR == signal(SIGALRM, SIG_DFL)) {
+        TRACE("signal()");
     }
 }
 
 void scheduler_execute(void) {
     setjmp(scheduler.env);
+    set_timer();
     schedule();
+    clear_timer();
     destroy();
 }
 
-void scheduler_yield(void) {
+void scheduler_yield(int signum) {
+    assert(SIGALRM == signum);
+
     if (setjmp(scheduler.current->env) == 0) {
         scheduler.current->status = STATUS_SLEEPING;
         longjmp(scheduler.env, 1);

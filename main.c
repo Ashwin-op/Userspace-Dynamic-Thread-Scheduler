@@ -11,33 +11,31 @@
 #include "scheduler.h"
 
 static void
-_thread_(void *arg)
-{
-	const char *name;
-	int i;
+_thread_(void *arg) {
+    const char *name;
+    int i;
 
-	name = (const char *)arg;
-	for (i=0; i<100; ++i) {
-		printf("%s %d\n", name, i);
-		us_sleep(20000);
-		scheduler_yield();
-	}
+    name = (const char *) arg;
+    for (i = 0; i < 100; ++i) {
+        printf("%s %d\n", name, i);
+        us_sleep(20000);
+        /*scheduler_yield(14);*/
+    }
 }
 
 int
-main(int argc, char *argv[])
-{
-	UNUSED(argc);
-	UNUSED(argv);
+main(int argc, char *argv[]) {
+    UNUSED(argc);
+    UNUSED(argv);
 
-	if (scheduler_create(_thread_, "hello") ||
-	    scheduler_create(_thread_, "world") ||
-	    scheduler_create(_thread_, "love") ||
-	    scheduler_create(_thread_, "this") ||
-	    scheduler_create(_thread_, "course!")) {
-		TRACE(0);
-		return -1;
-	}
-	scheduler_execute();
-	return 0;
+    if (scheduler_create(_thread_, "hello") ||
+        scheduler_create(_thread_, "world") ||
+        scheduler_create(_thread_, "love") ||
+        scheduler_create(_thread_, "this") ||
+        scheduler_create(_thread_, "course!")) {
+        TRACE(0);
+        return -1;
+    }
+    scheduler_execute();
+    return 0;
 }

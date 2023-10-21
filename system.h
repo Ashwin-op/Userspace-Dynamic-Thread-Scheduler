@@ -23,35 +23,35 @@
 
 #define ARRAY_SIZE(a) ( (sizeof (a)) / (sizeof (a[0])) )
 
-#define UNUSED(s)				\
-	do {					\
-		(void)(s);			\
-	} while (0)
+#define UNUSED(s)                \
+    do {                    \
+        (void)(s);            \
+    } while (0)
 
-#define TRACE(s)				\
-	do {					\
-		fprintf(stderr,			\
-			"error: %s:%d: %s\n",	\
-			__FILE__,		\
-			__LINE__,		\
-			safe_strlen(s) ?	\
-			(s) : "^");		\
-	} while (0)
+#define TRACE(s)                \
+    do {                    \
+        fprintf(stderr,            \
+            "error: %s:%d: %s\n",    \
+            __FILE__,        \
+            __LINE__,        \
+            safe_strlen(s) ?    \
+            (s) : "^");        \
+    } while (0)
 
-#define EXIT(s)					\
-	do {					\
-		TRACE((s));			\
-		assert( 0 );			\
-		exit(-1);			\
-	} while (0)
+#define EXIT(s)                    \
+    do {                    \
+        TRACE((s));            \
+        assert( 0 );            \
+        exit(-1);            \
+    } while (0)
 
-#define FREE(p)					\
-	do {					\
-		if ((p)) {			\
-			free((void *)(p));	\
-			(p) = NULL;		\
-		}				\
-	} while (0)
+#define FREE(p)                    \
+    do {                    \
+        if ((p)) {            \
+            free((void *)(p));    \
+            (p) = NULL;        \
+        }                \
+    } while (0)
 
 void us_sleep(uint64_t us);
 

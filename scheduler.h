@@ -47,6 +47,6 @@ void scheduler_execute(void);
  * Called from within a user thread to yield the CPU to another user thread.
  */
 
-void scheduler_yield(void);
+void scheduler_yield(int signum);
 
 #endif /* _SCHEDULER_H_ */
